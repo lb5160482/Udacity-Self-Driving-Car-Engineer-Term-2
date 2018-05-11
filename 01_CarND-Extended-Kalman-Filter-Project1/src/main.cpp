@@ -111,8 +111,8 @@ int main()
 					
 					VectorXd estimate(4);
 					
-					double p_x = fusionEKF.ekf_.x_(0);
-					double p_y = fusionEKF.ekf_.x_(1);
+                    double p_x = fusionEKF.ekf_.x_(0);
+                    double p_y = fusionEKF.ekf_.x_(1);
 					double v1  = fusionEKF.ekf_.x_(2);
 					double v2 = fusionEKF.ekf_.x_(3);
 					
@@ -125,7 +125,7 @@ int main()
 					
 					VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
 					
-					json msgJson;
+                    json msgJson;
 					msgJson["estimate_x"] = p_x;
 					msgJson["estimate_y"] = p_y;
 					msgJson["rmse_x"] =  RMSE(0);

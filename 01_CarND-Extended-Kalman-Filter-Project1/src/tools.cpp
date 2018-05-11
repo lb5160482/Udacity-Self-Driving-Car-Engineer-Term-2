@@ -11,28 +11,22 @@ Tools::~Tools() {}
 
 VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
                               const vector<VectorXd> &ground_truth) {
-    /**
-     TODO:
-     * Calculate the RMSE here.
-     */
     VectorXd rmse(4);
     rmse << 0,0,0,0;
     for(int i=0; i < estimations.size(); ++i){
         VectorXd diff = estimations[i] - ground_truth[i];
+        // element wise product
         VectorXd diffElementProd = diff.array() * diff.array();
         rmse += diffElementProd;
     }
     rmse = rmse/estimations.size();
+    // element wise sqrt
     rmse = rmse.array().sqrt();
     
     return rmse;
 }
 
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
-    /**
-     TODO:
-     * Calculate a Jacobian here.
-     */
     MatrixXd Hj(3,4);
     //recover state parameters
     float px = x_state(0);
@@ -42,9 +36,9 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
     float px_2 = px * px;
     float py_2 = py * py;
     
-    //TODO: YOUR CODE HERE
     //check division by zero
     if (px == 0 && py == 0) {
+        cout << "Jacobian sigularuty!" <<endl;
         px = 0.0001;
     }
     //compute the Jacobian matrix
