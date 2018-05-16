@@ -24,9 +24,15 @@ public:
 
     ///* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
     VectorXd x_;
+    
+    ///* predicted state vector
+    VectorXd x_pred;
 
     ///* state covariance matrix
     MatrixXd P_;
+    
+    ///* predicted state covariance matrix
+    MatrixXd P_pred;
 
     ///* predicted sigma points matrix
     MatrixXd Xsig_pred_;
@@ -63,6 +69,12 @@ public:
 
     ///* Augmented state dimension
     int n_aug_;
+    
+    ///* radar measurement dimension
+    int n_z_radar_;
+    
+    ///* lidar measurement dimension
+    int n_z_lidar_;
 
     ///* Sigma point spreading parameter
     double lambda_;
@@ -89,7 +101,7 @@ public:
    * matrix
    * @param delta_t Time between k and k+1 in s
    */
-    void Prediction(double delta_t);
+    void Prediction(double dt);
 
     /**
    * Updates the state and the state covariance matrix using a laser measurement
@@ -108,6 +120,20 @@ public:
     * @return MatrixXd where each column represents a sigma point in the state space
     */
     MatrixXd GenerateSigmaAug();
+    
+    /**
+     * Predict sigma points in state space using state transfer funcgtion
+     * @param dt delta time from last timestamp to current timestamp
+     * @return MatrixXd where each column represents a sigma point prediction in state space
+     */
+    MatrixXd SigPrediction(MatrixXd& sigAug, double dt);
+    
+    /**
+     * Using predidcted sigma points to predict state mean and covariance
+     * @param xPred state mean to be predicted
+     * @param PPred state covariance to be predicted
+     */
+    void MeanAndCovPrediction();
 };
 
 #endif /* UKF_H */
