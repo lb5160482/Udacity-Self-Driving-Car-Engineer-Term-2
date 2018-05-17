@@ -29,7 +29,7 @@ UKF::UKF() {
     P_pred = MatrixXd(5, 5);
 
     // Process noise standard deviation longitudinal acceleration in m/s^2
-    std_a_ = 2;
+    std_a_ = 3;
 
     // Process noise standard deviation yaw acceleration in rad/s^2
     std_yawdd_ = 0.3;
@@ -72,6 +72,9 @@ UKF::UKF() {
     for (int i = 1; i < 2 * n_aug_ + 1; ++i) {
         weights_(i) = 1 / (2 * (lambda_ + n_aug_));
     }
+    
+    //
+    Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
 }
 
 UKF::~UKF() {}
@@ -143,7 +146,7 @@ void UKF::Prediction(double dt) {
     // get aumented sigma points
     MatrixXd sigAug = GenerateSigmaAug();
     // convert augmented sigma points to state space as prediction
-    this->Xsig_pred_ = SigPrediction(sigAug, dt);
+     SigPrediction(sigAug, dt);
     // using predicted sigma points in state space to approximate predicted state mean and state covariance
     MeanAndCovPrediction();
 }
@@ -342,9 +345,7 @@ MatrixXd UKF::GenerateSigmaAug() {
  * @param dt delta time from last timestamp to current timestamp
  * @return MatrixXd where each column represents a sigma point prediction in state space
  */
-MatrixXd UKF::SigPrediction(MatrixXd& sigAug, double dt) {
-    MatrixXd sigPred = MatrixXd(n_x_, 2 * n_aug_ + 1);
-    sigPred.fill(0.0);
+void UKF::SigPrediction(MatrixXd& sigAug, double dt) {
     for (int i = 0; i < 2 * n_aug_ + 1; ++i) {
         VectorXd xSigAug = sigAug.col(i);
         double px = xSigAug(0);
@@ -356,19 +357,18 @@ MatrixXd UKF::SigPrediction(MatrixXd& sigAug, double dt) {
         double aYaw = xSigAug(6);
         // avoid dividing by zero
         if (fabs(yawRate) < 0.001) {
-            sigPred(0, i) = px + v * cos(yaw) * dt + 0.5 * pow(dt, 2) * cos(yaw) * aV;
-            sigPred(1, i) = py + v * sin(yaw) * dt + 0.5 * pow(dt, 2) * sin(yaw) * aV;
+            this->Xsig_pred_(0, i) = px + v * cos(yaw) * dt + 0.5 * pow(dt, 2) * cos(yaw) * aV;
+            this->Xsig_pred_(1, i) = py + v * sin(yaw) * dt + 0.5 * pow(dt, 2) * sin(yaw) * aV;
         }
         else {
-            sigPred(0, i) = px + v / yawRate * (sin(yaw + yawRate * dt) - sin(yaw)) + 0.5 * pow(dt, 2) * cos(yaw) * aV;
-            sigPred(1, i) = py + v / yawRate * (-cos(yaw + yawRate * dt) + cos(yaw)) + 0.5 * pow(dt, 2) * sin(yaw) * aV;
+            this->Xsig_pred_(0, i) = px + v / yawRate * (sin(yaw + yawRate * dt) - sin(yaw)) + 0.5 * pow(dt, 2) * cos(yaw) * aV;
+            this->Xsig_pred_(1, i) = py + v / yawRate * (-cos(yaw + yawRate * dt) + cos(yaw)) + 0.5 * pow(dt, 2) * sin(yaw) * aV;
         }
-        sigPred(2, i) = v + dt * aV;
-        sigPred(3, i) = yaw + yawRate * dt + 0.5 * pow(dt, 2) * aYaw;
-        sigPred(4, i) = yawRate + dt * aYaw;
+        this->Xsig_pred_(2, i) = v + dt * aV;
+        this->Xsig_pred_(3, i) = yaw + yawRate * dt + 0.5 * pow(dt, 2) * aYaw;
+        this->Xsig_pred_(4, i) = yawRate + dt * aYaw;
     }
-    
-    return sigPred;
+
 }
 
 /**

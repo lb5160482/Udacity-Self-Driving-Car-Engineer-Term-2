@@ -126,7 +126,7 @@ public:
      * @param dt delta time from last timestamp to current timestamp
      * @return MatrixXd where each column represents a sigma point prediction in state space
      */
-    MatrixXd SigPrediction(MatrixXd& sigAug, double dt);
+    void SigPrediction(MatrixXd& sigAug, double dt);
     
     /**
      * Using predidcted sigma points to predict state mean and covariance
