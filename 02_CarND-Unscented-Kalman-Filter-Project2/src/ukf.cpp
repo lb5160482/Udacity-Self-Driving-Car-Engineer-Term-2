@@ -15,7 +15,7 @@ UKF::UKF() {
     is_initialized_ = false;
 
     // if this is false, laser measurements will be ignored (except during init)
-    use_laser_ = true;
+    use_laser_ = false;
 
     // if this is false, radar measurements will be ignored (except during init)
     use_radar_ = true;
@@ -141,7 +141,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
  */
 void UKF::Prediction(double dt) {
     // get aumented sigma points
-    MatrixXd sigAug = GenerateSigmaAug();
+    MatrixXd sigAug = GenerateSigmaAug();    
     // convert augmented sigma points to state space as prediction
     this->Xsig_pred_ = SigPrediction(sigAug, dt);
     // using predicted sigma points in state space to approximate predicted state mean and state covariance
@@ -189,7 +189,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
         ZSig(1, i) = atan2(py, px);
         ZSig(2, i) = (px * cos(yaw) * v + py * sin(yaw) * v) / c1;
     }
-    
+
     // calculate mean predicted measurement
     zPred.fill(0.0);
     for (int i = 0; i < 2 * n_aug_ + 1; ++i) {
@@ -213,7 +213,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
         S += weights_(i) * diff * diff.transpose();
     }
     S += R;
-    
+
     /************* Update states *************/
     // create and computecross correlation matrix
     MatrixXd Tc = MatrixXd(n_x_, n_z_radar_);
@@ -281,6 +281,7 @@ MatrixXd UKF::GenerateSigmaAug() {
     for (int i = 0; i < n_aug_; ++i) {
         xSigAUg.col(ind) = xAug + sqrt(lambda_ + n_x_) * sqrtPAug.col(i);
         xSigAUg.col(ind + n_aug_) = xAug + sqrt(lambda_ + n_aug_) * sqrtPAug.col(i);
+        ind++;
     }
 
     return xSigAUg;
@@ -293,7 +294,7 @@ MatrixXd UKF::GenerateSigmaAug() {
  */
 MatrixXd UKF::SigPrediction(MatrixXd& sigAug, double dt) {
     MatrixXd sigPred = MatrixXd(n_x_, 2 * n_aug_ + 1);
-    for (int i = 0; i < n_aug_; ++i) {
+    for (int i = 0; i < 2 * n_aug_ + 1; ++i) {
         VectorXd xSigAug = sigAug.col(i);
         double px = xSigAug(0);
         double py = xSigAug(1);
