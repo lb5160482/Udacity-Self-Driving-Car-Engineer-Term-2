@@ -11,8 +11,8 @@ namespace plt = matplotlibcpp;
 using CppAD::AD;
 
 // TODO: Set N and dt
-size_t N = ? ;
-double dt = ? ;
+size_t N = 25;
+double dt = 0.05;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -60,11 +60,28 @@ class FG_eval {
     // TODO: Define the cost related the reference state and
     // any anything you think may be beneficial.
 
+    // difference cost
+    for (int t = 0; t < N; ++t) {
+        fg[0] += CppAD::pow(vars[cte_start + t], 2);
+        fg[0] += CppAD::pow(vars[epsi_start + t], 2);
+        fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
+    }
+    // minimize the usage of actuators
+    for (int t = 0; t < N - 1; ++t) {
+        fg[0] += CppAD::pow(vars[delta_start + t], 2);
+        fg[0] += CppAD::pow(vars[a_start + t], 2);
+    }
+    // minimize difference between two consecutive actuators
+    for (int t = 0; t < N - 2; ++t) {
+        fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+        fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+    }
+
+
     //
     // Setup Constraints
     //
-    // NOTE: In this section you'll setup the model constraints.
-
+    // NOTE: In this section you'll setup the model constraints
     // Initial constraints
     //
     // We add 1 to each of the starting indices due to cost being located at
