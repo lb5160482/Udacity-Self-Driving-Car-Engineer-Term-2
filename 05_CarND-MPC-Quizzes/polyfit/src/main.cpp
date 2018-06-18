@@ -51,7 +51,6 @@ int main() {
     // coordinates.
     Eigen::VectorXd fit = polyfit(xvals, yvals, 3);
     
-    
     for (double x = 0; x <= 20; x += 1.0) {
         // TODO: use `polyeval` to evaluate the x values.
         std::cout << polyeval(fit, x) << std::endl;
