@@ -98,8 +98,8 @@ int main() {
                      * Both are in between [-1, 1].
                      *
                      */
-                    double steer_value;
-                    double throttle_value;
+                    double steer_value = j[1]["steering_angle"];
+                    double throttle_value = j[1]["throttle"];
                     if (ptsx.size() != ptsy.size()) {
                         std::cout << "Error! Trajectory points x and y numbers are different!" << std::endl;
                         return;
@@ -118,8 +118,20 @@ int main() {
                     auto coeffs = polyfit(ptsx_vec, ptsy_vec, 3);
                     double cte = polyeval(coeffs, 0);
                     double epsi = - atan(coeffs[1]);
+                    
+                    // latency processing
+                    double dt = 0.1;
+                    const double Lf = 2.67;
+                    double x0 = 0, y0 = 0, psi0 = 0, v0 = v, cte0 = cte, epsi0 = epsi;
+                    double x1 = x0 + v * cos(0) * dt;
+                    double y1 = y0 + v * sin(0) * dt;
+                    double psi1 = psi0 - v/Lf * steer_value * dt;
+                    double v1 = v0 + throttle_value * dt;
+                    double cte1 =  cte0 + v * sin(epsi0) * dt;
+                    double epsi1 = epsi0 - v * steer_value / Lf * dt;
+                    
                     Eigen::VectorXd state(6);
-                    state << 0, 0, 0, v, cte, epsi;
+                    state << x1, y1, psi1, v1, cte1, epsi1;
                     auto vars = mpc.Solve(state, coeffs);
                     steer_value = vars[0];
                     throttle_value = vars[1];
